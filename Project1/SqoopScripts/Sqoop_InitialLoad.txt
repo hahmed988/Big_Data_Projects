@@ -1,0 +1,125 @@
+## Initial import - this imports all 6 tables from mysql to HDFS. (each table's data will be loaded into a directory)
+
+##1. Sqoop import - execute below command on terminal
+sqoop job \
+--create initialimport \
+-- import-all-tables \
+--connect jdbc:mysql://dbhost/insofe_employeesDB \
+--username insofeadmin \
+--password-file /user/1289B29/.mysql_password \
+--warehouse-dir '/user/1289B29/datasets/employeesdb/' \
+-m 1
+
+sqoop job --exec initialimport
+
+--------- incremental / Delta Loads ---------
+
+#### import only newly added/updated rows.
+
+## Now add/load 10000 more employees to the employee database.
+## execute the command 'source employees_added.sql' from mysql CLI - this will load data for additional 10000 employees 
+## using the *_added.dump files.
+
+sqoop job \
+--create inc_imp_emp \
+-- import \
+--connect jdbc:mysql://dbhost/insofe_employeesDB \
+--username insofeadmin \
+--password-file /user/1289B29/.mysql_password \
+--table employees \
+--incremental append \
+--check-column emp_no \
+--last-value 300024 \
+--target-dir '/user/1289B29/datasets/employeesdb/employees/' \
+-m 1
+
+sqoop job --exec inc_imp_emp
+
+-----
+
+sqoop job \
+--create inc_imp_dept \
+-- import \
+--connect jdbc:mysql://dbhost/insofe_employeesDB \
+--username insofeadmin \
+--password-file /user/1289B29/.mysql_password \
+--table departments \
+--incremental lastmodified \
+--check-column last_modified \
+--last-value "2013-01-28 23:59:59" \
+--target-dir '/user/1289B29/datasets/employeesdb/departments/' \
+-m 1 \
+--merge-key dept_no
+
+sqoop job --exec inc_imp_dept
+
+-----
+
+sqoop job \
+--create inc_imp_deptemp \
+-- import \
+--connect jdbc:mysql://dbhost/insofe_employeesDB \
+--username insofeadmin \
+--password-file /user/1289B29/.mysql_password \
+--table dept_emp \
+--incremental lastmodified \
+--check-column last_modified \
+--last-value "2013-01-28 23:59:59" \
+--target-dir '/user/1289B29/datasets/employeesdb/dept_emp/' \
+--merge-key seq_no \
+--split-by seq_no
+
+sqoop job --exec inc_imp_deptemp
+
+-----
+sqoop job \
+--create inc_imp_deptmgr \
+-- import \
+--connect jdbc:mysql://dbhost/insofe_employeesDB \
+--username insofeadmin \
+--password-file /user/1289B29/.mysql_password \
+--table dept_manager \
+--incremental lastmodified \
+--check-column last_modified \
+--last-value "2013-01-28 23:59:59" \
+--target-dir '/user/1289B29/datasets/employeesdb/dept_manager/' \
+--merge-key seq_no \
+--split-by seq_no
+
+sqoop job --exec inc_imp_deptmgr
+
+-----
+
+sqoop job \
+--create inc_imp_sal \
+-- import \
+--connect jdbc:mysql://dbhost/insofe_employeesDB \
+--username insofeadmin \
+--password-file /user/1289B29/.mysql_password \
+--table salaries \
+--incremental lastmodified \
+--check-column last_modified \
+--last-value "2013-01-28 23:59:59" \
+--target-dir '/user/1289B29/datasets/employeesdb/salaries/' \
+--merge-key seq_no \
+--split-by seq_no
+
+sqoop job --exec inc_imp_sal
+
+-----
+
+sqoop job \
+--create inc_imp_titles \
+-- import \
+--connect jdbc:mysql://dbhost/insofe_employeesDB \
+--username insofeadmin \
+--password-file /user/1289B29/.mysql_password \
+--table titles \
+--incremental lastmodified \
+--check-column last_modified \
+--last-value "2013-01-28 23:59:59" \
+--target-dir '/user/1289B29/datasets/employeesdb/titles/' \
+--merge-key seq_no \
+--split-by seq_no
+
+sqoop job --exec inc_imp_titles

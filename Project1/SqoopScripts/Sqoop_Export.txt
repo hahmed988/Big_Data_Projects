@@ -1,0 +1,43 @@
+Objective: Export data from HDFS to MySQL using Sqoop.
+
+#### Export from HDFS to MySQL using sqoop export        
+        
+sqoop job \
+--create export_all \
+-- export \
+--connect jdbc:mysql://dbhost/insofe_results_B291289 \
+--username insofeadmin \
+--password-file /user/1289B29/.mysql_password \
+--table active_emp_details \
+--export-dir '/user/1289B29/datasets/employeesdb/active_employees_data/' \
+--batch \
+--update-key emp_no \
+--update-mode allowinsert
+
+sqoop job \
+--create export_aggr_1 \
+-- export \
+--connect jdbc:mysql://dbhost/insofe_results_B291289 \
+--username insofeadmin \
+--password-file /user/1289B29/.mysql_password \
+--table dept_aggr_by_gender \
+--export-dir '/user/1289B29/datasets/employeesdb/dept_aggr_by_gender/' \
+--batch \
+--update-key dept_no,gender \
+--update-mode allowinsert
+
+sqoop job \
+--create export_aggr_2 \
+-- export \
+--connect jdbc:mysql://dbhost/insofe_results_B291289 \
+--username insofeadmin \
+--password-file /user/1289B29/.mysql_password \
+--table dept_aggr \
+--export-dir '/user/1289B29/datasets/employeesdb/dept_aggr/' \
+--batch \
+--update-key dept_no \
+--update-mode allowinsert
+
+sqoop job --exec export_all
+sqoop job --exec export_aggr_1
+sqoop job --exec export_aggr_2
